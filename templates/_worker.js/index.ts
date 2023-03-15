@@ -147,10 +147,20 @@ export default {
       for (const matcher of matchers) {
         if (matcher.regexp) {
           const regexp = new RegExp(matcher?.regexp);
+          const pathnameMatcher = pathname.match(regexp);
           if (
-            pathname.match(regexp) ||
+            pathnameMatcher ||
             `${pathname}/page`.replace("//page", "/page").match(regexp)
           ) {
+            if (pathnameMatcher?.groups) {
+              const params = new URLSearchParams(pathnameMatcher.groups);
+              const urlWithParams = new URL(request.url);
+              for (const [key, value] of params) {
+                urlWithParams.searchParams.set(key, value);
+              }
+              request = new Request(urlWithParams.toString(), request);
+            }
+
             found = true;
             break;
           }
